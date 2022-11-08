@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
@@ -24,7 +24,26 @@ async function dbClient() {
 }
 dbClient();
 const visitingPlace = client.db('tourist').collection('visiting')
+app.get('/details/:id',async(req,res)=>{
+  const {id} = req.params
+  try {
+    const result = await visitingPlace.findOne({_id:ObjectId(id)})
+    res.send(result)
+  } catch (error) {
+    console.log(error);
+  }
+})
 
+app.get('/service',async(req,res)=>{ 
+  const limit = parseInt(req.query.limit)
+    const find =  visitingPlace.find({})
+    try {
+       const result = await find.limit(limit).toArray()
+       res.send(result)
+    } catch (error) {
+        console.log(error.message);
+    }
+})
 app.get("/", (req, res) => {
   res.send("Api is running now");
 });

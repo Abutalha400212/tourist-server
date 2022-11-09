@@ -34,6 +34,43 @@ app.get("/details/:id", async (req, res) => {
     console.log(error);
   }
 });
+app.post('/addservice',async(req,res)=>{
+  const query = req.body
+  try {
+    const result = await visitingPlace.insertOne(query)
+    if(result.insertedId){
+      res.send({
+        success: true,
+        message: `review accepted from authority on ${result.insertedId}`
+      })
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+app.patch('/update/:id',async(req,res)=>{
+  const {id} = req.params
+  try {
+    const result = await reviews.updateOne({_id:ObjectId(id)},{$set:req.body})
+    if(result.matchedCount){
+      res.send({
+        success:true,
+        message:'Your Data updated'
+      })
+    }
+  } catch (error) {
+    console.log(err);
+  }
+})
+app.get('/update/:id',async(req,res)=>{
+  const { id } = req.params;
+  try {
+    const result = await reviews.findOne({ _id: ObjectId(id) });
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+  }
+})
 app.post("/review", async (req, res) => {
   const query = req.body;
   try {
@@ -54,12 +91,29 @@ app.get("/review", async (req, res) => {
   const find = reviews.find(query);
   try {
     const result = await find.toArray();
-    res.send(result);
+        res.send({
+          success: true,
+          data: result
+          })
+     
   } catch (error) {
     console.log(error);
   }
 });
-
+app.delete('/review/:id',async(req,res)=>{
+  const {id} = req.params
+  try {
+    const result = await reviews.deleteOne({_id:ObjectId(id)})
+  if(result.deletedCount){
+    res.send({
+      success:true,
+      message:`Item deleted on id ${result._id}`
+    })
+  }
+  } catch (error) {
+    console.log(error);
+  }
+})
 app.get("/service", async (req, res) => {
   const limit = parseInt(req.query.limit);
   const find = visitingPlace.find({});

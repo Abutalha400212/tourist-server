@@ -17,12 +17,11 @@ const client = new MongoClient(uri, {
 });
 function jwtVerifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
-  const token = authHeader.split(" ")[1];
-  if (!token) {
+  if (!authHeader) {
     return res.send({ message: "Unauthorized Access" });
   }
-
-  jwtToken.verify(token, process.env.JWT_TOKEN, function (err, decoded) {
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.JWT_TOKEN, function (err, decoded) {
     if (err) {
       return res.status(401).send({ message: "Unauthorized Access" });
     }
@@ -121,7 +120,7 @@ app.get("/review", jwtVerifyToken, async (req, res) => {
       res.status(403).send({ message: "Forbidden Access" });
     }
 
-    const result = await find.toArray();
+    const result = await find.sort({date: -1}).toArray();
     res.send({
       success: true,
       data: result,

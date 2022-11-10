@@ -2,15 +2,16 @@ const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
-
 const port = process.env.PORT || 5000;
 const app = express();
+// .......Middle War...........//
+require("dotenv").config();
 app.use(cors());
 app.use(express.json());
-
+//........ MongoDb Id and Password...........//
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.wdoppqt.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 }, { connectTimeoutMS: 30000 }, { keepAlive: 1 });
+//............... middle war of jwt token...................//
 function jwtVerifyToken(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
@@ -25,6 +26,7 @@ function jwtVerifyToken(req, res, next) {
     next();
   });
 }
+//.............. Db Connected............//
 async function dbClient() {
   try {
     await client.connect();
@@ -34,15 +36,27 @@ async function dbClient() {
   }
 }
 dbClient();
+//............Folder Creation of Db..............//
 const visitingPlace = client.db("tourist").collection("visiting");
 const reviews = client.db("tourist").collection("review");
-
+//............Jwt..................//
 app.post("/jwt", (req, res) => {
   const user = req.body;
   const token = jwt.sign(user, process.env.JWT_TOKEN, { expiresIn: "1h" });
   res.send({ token });
 });
-
+//......................Service Data Load................//
+app.get("/service", async (req, res) => {
+  const limit = parseInt(req.query.limit);
+  const find = visitingPlace.find({});
+  try {
+    const result = await find.limit(limit).toArray();
+    res.send(result);
+  } catch (error) {
+    console.log(error.message);
+  }
+});
+//...........Load Detais Service Data by Own id.............//
 app.get("/details/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -52,6 +66,7 @@ app.get("/details/:id", async (req, res) => {
     console.log(error);
   }
 });
+//.................Service Add..................//
 app.post("/addservice", async (req, res) => {
   const query = req.body;
   try {
@@ -66,6 +81,7 @@ app.post("/addservice", async (req, res) => {
     console.log(error);
   }
 });
+//......................User review Update Method...............//
 app.patch("/update/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -83,6 +99,7 @@ app.patch("/update/:id", async (req, res) => {
     console.log(err);
   }
 });
+//......................User Review Data load by own id............//
 app.get("/update/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -92,6 +109,7 @@ app.get("/update/:id", async (req, res) => {
     console.log(error);
   }
 });
+//...................User Review add....................//
 app.post("/review", async (req, res) => {
   const query = req.body;
   try {
@@ -106,7 +124,7 @@ app.post("/review", async (req, res) => {
     console.log(error);
   }
 });
-
+//.....................Get user Review Data....................//
 app.get("/review", jwtVerifyToken, async (req, res) => {
   const query = { email: req.query.email };
   const find = reviews.find(query);
@@ -125,6 +143,7 @@ app.get("/review", jwtVerifyToken, async (req, res) => {
     console.log(error);
   }
 });
+//.................User Review Delete Method................//
 app.delete("/review/:id", async (req, res) => {
   const { id } = req.params;
   try {
@@ -137,16 +156,6 @@ app.delete("/review/:id", async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-  }
-});
-app.get("/service", async (req, res) => {
-  const limit = parseInt(req.query.limit);
-  const find = visitingPlace.find({});
-  try {
-    const result = await find.limit(limit).toArray();
-    res.send(result);
-  } catch (error) {
-    console.log(error.message);
   }
 });
 app.get("/", (req, res) => {

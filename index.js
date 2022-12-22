@@ -42,7 +42,7 @@ const reviews = client.db("tourist").collection("review");
 //............Jwt..................//
 app.post("/jwt", (req, res) => {
   const user = req.body;
-  const token = jwt.sign(user, process.env.JWT_TOKEN, { expiresIn: "1h" });
+  const token = jwt.sign(user, process.env.JWT_TOKEN, { expiresIn: "1d" });
   res.send({ token });
 });
 //......................Service Data Load................//
@@ -69,6 +69,7 @@ app.get("/details/:id", async (req, res) => {
 //.................Service Add..................//
 app.post("/addservice", async (req, res) => {
   const query = req.body;
+  console.log(query);
   try {
     const result = await visitingPlace.insertOne(query);
     if (result.insertedId) {
@@ -133,7 +134,6 @@ app.get("/review", jwtVerifyToken, async (req, res) => {
     if (decoded.email !== req.query.email) {
       res.status(403).send({ message: "Forbidden Access" });
     }
-
     const result = await find.sort({date: -1}).toArray();
     res.send({
       success: true,
@@ -143,6 +143,14 @@ app.get("/review", jwtVerifyToken, async (req, res) => {
     console.log(error);
   }
 });
+app.get('/reviews',async (req,res)=>{
+  try {
+    const result = await reviews.find({}).sort({date: -1}).toArray()
+    res.send(result)
+  } catch (error) {
+    console.log(error);
+  }
+})
 //.................User Review Delete Method................//
 app.delete("/review/:id", async (req, res) => {
   const { id } = req.params;
@@ -150,8 +158,7 @@ app.delete("/review/:id", async (req, res) => {
     const result = await reviews.deleteOne({ _id: ObjectId(id) });
     if (result.deletedCount) {
       res.send({
-        success: true,
-        message: `Item deleted on id ${result._id}`,
+        success: true
       });
     }
   } catch (error) {
